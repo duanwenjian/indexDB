@@ -1,0 +1,33 @@
+{
+  "name": "indexdb",
+  "version": "0.0.1",
+  "description": "mode of use indexDB",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test",
+    "build": "babel ./src/index.js -o ./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duanwenjian/indexDB.git"
+  },
+  "author": "duanwenjian",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/duanwenjian/indexDB/issues"
+  },
+  "homepage": "https://github.com/duanwenjian/indexDB#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "eslint": "^4.19.1"
+  },
+  "dependencies": {
+    "webpack": "^4.7.0"
+  }
+}
