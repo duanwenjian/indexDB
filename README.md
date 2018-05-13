@@ -76,4 +76,15 @@ var table = [
 indexDB.createTable(table)
 ```
 
+*   插入数据
+```javascript
+var data = [
+    {
+        //item info
+    }
+    // .. more item
+];
+var tableName = 'T1';   //插入的表名
+indexDB.insert(tableName,data);
+```
 ### 后续正在更新...
