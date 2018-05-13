@@ -5,7 +5,7 @@
 *   [下载脚本](https://github.com/duanwenjian/indexDB/tree/master/dist/indexDB.js) 到项目目录引入<br/>
 
 ```html
-<script  src="./indexDB-min.js"></script>
+<script  src="./indexDB.js"></script>
 ```
 
 ## 使用方式
