@@ -28,6 +28,14 @@ var params = {
                     nameIndex:'',   //索引字段名字 可为空
                     unique:true     //是否唯一
                 }
+            ],
+            data:[  //默认数据
+                {
+                    //data 1
+                },
+                {
+                    //data 2
+                }
             ]
         }
         //  ...more table
@@ -46,11 +54,19 @@ var table = [
                     name:'id',  //名字
                     autoIncrement:true  //是否自动增长
                 },
-                index:[
+                index:[//索引
                     {
                         name:'index3',  //索引名称
                         nameIndex:'',   //索引字段名字 可为空
                         unique:true     //是否唯一
+                    }
+                ],
+                data:[//默认数据
+                    {
+                        //data 1
+                    },
+                    {
+                        //data 2
                     }
                 ]
             }

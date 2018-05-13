@@ -21,6 +21,7 @@ var indexDB = function () {
         };
         return this._init();
     }
+
     /**
      * 初始化执行操作
      * @param null
@@ -49,6 +50,7 @@ var indexDB = function () {
                 }
             };
         }
+
         /**
          * 获取参数
          * @paranm {string} name
@@ -79,6 +81,7 @@ var indexDB = function () {
             }
             this.indexDB[name.toString()] = value;
         }
+
         /**
          * localstroage存储version
          * @param null
@@ -89,6 +92,7 @@ var indexDB = function () {
         value: function _setLocalStroage() {
             localStorage.setItem('indexDBversion', this._getValue('version'));
         }
+
         /**
          * 获取version
          * @param null
@@ -99,6 +103,7 @@ var indexDB = function () {
         value: function _getLocalStroage() {
             return localStorage.getItem('indexDBversion');
         }
+
         /**
          * 获取indexDB的支持度
          * @param null
@@ -118,6 +123,7 @@ var indexDB = function () {
             }
             return indexedDB;
         }
+
         /**
          * 新版本打开database
          * @param {function} callback 回调函数
@@ -135,6 +141,7 @@ var indexDB = function () {
                 typeof callback === 'function' ? callback(e) : '';
             });
         }
+
         /**
          * 创建database
          * @param {string} name : database name
@@ -186,6 +193,7 @@ var indexDB = function () {
     }, {
         key: '_DBOnversionchange',
 
+
         /**
          * 数据版本变更
          * @param e
@@ -193,10 +201,11 @@ var indexDB = function () {
         value: function _DBOnversionchange(e) {
             this._DB.close();
             //删除引用
-            // delete this._DB;
+            delete this._DB;
             this._setValue('indexDBActive', false);
             console.log("A new version of this page is ready. Please reload!");
         }
+
         /**
          * DB about
          * @param e
@@ -205,6 +214,7 @@ var indexDB = function () {
     }, {
         key: '_DBOnabout',
         value: function _DBOnabout(e) {}
+
         /**
          * DB close
          * @param e
@@ -213,6 +223,7 @@ var indexDB = function () {
     }, {
         key: '_DBCLose',
         value: function _DBCLose(e) {}
+
         /**
          * 创建表
          * @param {object} _createTablee : database change result
@@ -225,11 +236,16 @@ var indexDB = function () {
             for (var i = 0, len = table.length; i < len; i++) {
                 var _name = table[i].name,
                     _keyPath = table[i].id && table[i].id.name || 'id',
-                    _autoIncrement = table[i].id && table[i].id.autoIncrement || true;
+                    _autoIncrement = table[i].id && table[i].id.autoIncrement || true,
+                    _default = table[i].data;
                 var store = this._creatrTablestore(e, _name, _keyPath, _autoIncrement);
                 this._createTableIndex(store, table[i].index || []);
+                /*if (_default && _default.length > 0) {
+                    this._insert(_name, _default);
+                }*/
             }
         }
+
         /**
          * 创建 table store
          * @param {object} e
@@ -263,10 +279,12 @@ var indexDB = function () {
                 store.createIndex(_name, _nameIndex, { unique: _unique });
             }
         }
+
         /**
          * 创建操作事务
          * @param {string} tableName : 打开的table
          * @param {string} Jurisdictionv : 操作权限 读写：readwrite readonly：只读
+         * @param {function} callback : 回调函数
          * */
 
     }, {
