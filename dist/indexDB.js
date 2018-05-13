@@ -12,7 +12,12 @@ var indexDB = function () {
             name: props.name, //DB name
             version: this._getLocalStroage() || props.version || 1, //版本号
             indexDBSupport: false, //indexDB 支持度校验
-            indexDBTables: props.table || [] //需要新建的表
+            indexDBTables: props.table || [], //需要新建的表
+            indexDBActive: false, // 是否打开
+            jurisdictionv: {
+                readonly: 'readonly',
+                readwrite: 'readwrite'
+            }
         };
         return this._init();
     }
@@ -38,6 +43,9 @@ var indexDB = function () {
                     _this._openDatabase(function (e) {
                         _this._createTable(e, table);
                     });
+                },
+                insert: function insert(tableName, data) {
+                    _this._insert(tableName, data);
                 }
             };
         }
@@ -147,9 +155,20 @@ var indexDB = function () {
             // 成功回调
             req.onsuccess = function (e) {
                 _this3._DB = e.target.result;
+                _this3._setValue('indexDBActive', true); //数据打开
+                //关闭回调
+                _this3._DB.onclose = function (e) {};
+                // 错误回调
+                _this3._DB.onerror = function (e) {
+                    _this3._DBCLose(e);
+                };
+                //关于
+                _this3._DB.onabort = function (e) {
+                    _this3._DBOnabout(e);
+                };
+                //版本变化回调
                 _this3._DB.onversionchange = function (e) {
-                    _this3._DB.close();
-                    console.log("A new version of this page is ready. Please reload!");
+                    _this3._DBOnversionchange(e);
                 };
                 console.log(3, 'indexDB onsuccess');
             };
@@ -165,13 +184,43 @@ var indexDB = function () {
             };
         }
     }, {
-        key: '_createTable',
+        key: '_DBOnversionchange',
 
+        /**
+         * 数据版本变更
+         * @param e
+         * */
+        value: function _DBOnversionchange(e) {
+            this._DB.close();
+            //删除引用
+            // delete this._DB;
+            this._setValue('indexDBActive', false);
+            console.log("A new version of this page is ready. Please reload!");
+        }
+        /**
+         * DB about
+         * @param e
+         * */
+
+    }, {
+        key: '_DBOnabout',
+        value: function _DBOnabout(e) {}
+        /**
+         * DB close
+         * @param e
+         * */
+
+    }, {
+        key: '_DBCLose',
+        value: function _DBCLose(e) {}
         /**
          * 创建表
          * @param {object} _createTablee : database change result
          * @param {array} table : create table info
          * */
+
+    }, {
+        key: '_createTable',
         value: function _createTable(e, table) {
             for (var i = 0, len = table.length; i < len; i++) {
                 var _name = table[i].name,
@@ -212,6 +261,55 @@ var indexDB = function () {
                     _nameIndex = index[j].nameIndex || _name,
                     _unique = index[j].unique || false;
                 store.createIndex(_name, _nameIndex, { unique: _unique });
+            }
+        }
+        /**
+         * 创建操作事务
+         * @param {string} tableName : 打开的table
+         * @param {string} Jurisdictionv : 操作权限 读写：readwrite readonly：只读
+         * */
+
+    }, {
+        key: '_createTransaction',
+        value: function _createTransaction(tableName, Jurisdictionv) {
+            if (!this._DB) {
+                this._openDatabase(function (e) {
+                    console.log('open database');
+                });
+            }
+            var tx = this._DB.transaction(tableName, Jurisdictionv);
+            return tx.objectStore(tableName);
+        }
+
+        /**
+         * 插入数据
+         * @param {string} tablename : 需要插入的表
+         * @param {array} data : 数据
+         * */
+
+    }, {
+        key: '_insert',
+        value: function _insert(tablename, data) {
+            var Jurisdictionv = this._getValue('jurisdictionv').readwrite;
+            var objectStore = this._createTransaction(tablename, Jurisdictionv);
+
+            // 所有的索引
+            var indexNames = objectStore.indexNames;
+
+            if (!data || data.length <= 0) {
+                console.log('insert data cannot undefined or length 0');
+            }
+            for (var i = 0, len = data.length; i < len; i++) {
+                var req = objectStore.add(data[i]);
+                req.oncomplete = function (e) {
+                    console.log('oncomplete');
+                };
+                req.onerror = function (e) {
+                    console.log('onerror');
+                };
+                req.onsuccess = function (e) {
+                    console.log('onsuccess');
+                };
             }
         }
     }]);
