@@ -2,9 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>$Title$</title>
+    <title>Title</title>
 </head>
 <body>
-$END$
+<button id="ad_btn">add table</button>
+<script src="../dist/index.js"></script>
+<script>
+    var database = {
+        name:'test',
+        version:1,
+        table:[
+            {
+                name:'t1'
+            },
+            {
+                name:'t2',
+                id:{
+                    name :'id2',
+                    autoIncrement:true
+                },
+                index:[
+                    {
+                        name:'index1',
+                        unique:false
+                    },
+                    {
+                        name:'index2',
+                        unique:true
+                    }
+                ]
+            }
+        ]
+    };
+    var indexDB = new indexDB(database);
+    // console.log(indexDB);
+    document.getElementById('ad_btn').onclick = function(){
+        var newtable = [
+            {
+                name:'t3',
+                id:{
+                    name:'t3'
+                },
+                index:[
+                    {
+                        name:'t3index',
+                        unique:true
+                    }
+                ]
+            }
+        ];
+        indexDB.createTable(newtable);
+    }
+</script>
 </body>
 </html>
