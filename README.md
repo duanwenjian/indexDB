@@ -25,7 +25,7 @@ var params = {
             index:[
                 {
                     name:'index1',  //索引名称
-                    nameIndex:'',   //缩影字段名字 可为空
+                    nameIndex:'',   //索引字段名字 可为空
                     unique:true     //是否唯一
                 }
             ]
@@ -49,7 +49,7 @@ var table = [
                 index:[
                     {
                         name:'index3',  //索引名称
-                        nameIndex:'',   //缩影字段名字 可为空
+                        nameIndex:'',   //索引字段名字 可为空
                         unique:true     //是否唯一
                     }
                 ]
