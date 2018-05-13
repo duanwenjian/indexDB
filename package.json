@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "test",
-    "build": "babel ./src/index.js -o ./dist/index.js"
+    "build": "babel ./src/index.js -o ./dist/indexDB.js"
   },
   "repository": {
     "type": "git",

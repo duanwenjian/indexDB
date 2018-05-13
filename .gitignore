@@ -2,5 +2,8 @@
 .idea
 #node
 node_modules
-dist
+src
 package-lock.json
+
+#keep git file tree
+#.gitkeep
