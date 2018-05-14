@@ -108,6 +108,15 @@ class indexDB {
     }
 
     /**
+     * 队形合并
+     * @param {object} oldObj 旧数据
+     * @param {object} newObj 需要添加的数据
+     * */
+    _objectAssign(oldObj,newObj){
+        return Object.assign(oldObj,newObj);
+    }
+
+    /**
      * 执行操作队列
      * @param  null
      * */
@@ -366,5 +375,42 @@ class indexDB {
                 }
             }
         }
+    }
+
+    /**
+     * 修改数据
+     * @param {string} tableName ：需要修改的表格
+     * @param {object} data : 需要修改的数据
+     * @param {string} condition : 修改符合条件的数据
+     * */
+    _update(tableName,data,condition){
+        let oldObj = {};
+        let newObj = this._objectAssign(oldObj,data);
+    }
+
+    /**
+     * 查询数据
+     * @param {string} tableName ：需要查询的表格
+     * @param {string} condition : 修改查询条件的数据
+     * */
+    _select(tableName,condition){
+
+    }
+
+    /**
+     * 删除数据
+     * @param {string} tableName ：需要删除的表格
+     * @param {string} condition : 修改删除符合条件的数据
+     * */
+    _delete(tableName,condition){
+
+    }
+
+    /**
+     * 删除表
+     * @param {string} tableName : 删除的表名字
+     * */
+    _deleteTable (tableName){
+        
     }
 }
