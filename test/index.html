@@ -10,10 +10,15 @@
 <script>
     var database = {
         name:'test',
-        version:1,
+        // version:1,
         table:[
             {
-                name:'t1'
+                name:'t1',
+                data:[
+                    {
+                        t3index:'dwj1'
+                    }
+                ]
             },
             {
                 name:'t2',
@@ -29,6 +34,11 @@
                     {
                         name:'index2',
                         unique:true
+                    }
+                ],
+                data:[
+                    {
+                        t3index:'dwj2'
                     }
                 ]
             }
@@ -51,7 +61,7 @@
                 ],
                 data:[
                     {
-                        t3index:'dwj'
+                        t3index:'dwj3'
                     }
                 ]
             }

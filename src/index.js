@@ -2,14 +2,15 @@ class indexDB {
     constructor(props) {
         this.indexDB = {
             name: props.name,   //DB name
-            version: this._getLocalStroage() || props.version || 1, //版本号
+            version: Number(this._getLocalStroage() || props.version || 0), //版本号
             indexDBSupport: false,  //indexDB 支持度校验
             indexDBTables: props.table || [], //需要新建的表
             indexDBActive: false, // 是否打开
             jurisdictionv: {
                 readonly: 'readonly',
                 readwrite: 'readwrite'
-            }
+            },
+            actionQueue:[]//执行队列
         };
         return this._init();
     }
@@ -21,19 +22,20 @@ class indexDB {
     _init() {
         console.log(1, ' init');
         //创建数据库
-        this._openDatabase((e) => {
+        this._openNewDatabase((e) => {
             //初始化表
             this._createTable(e, this._getValue('indexDBTables'));
         })
         return {
             createTable: (table) => {
-                this._openDatabase((e) => {
+                this._openNewDatabase((e) => {
                     this._createTable(e, table);
                 })
             },
             insert: (tableName, data) => {
                 this._insert(tableName, data);
-            }
+            },
+            data:this.indexDB
         }
     }
 
@@ -79,6 +81,56 @@ class indexDB {
     }
 
     /**
+     * 压入等待执行操作
+     * @param {object} action :  需要执行的操作
+     * */
+    _pushAction(action){
+        this.indexDB.actionQueue.push(action);
+    }
+
+    /**
+     * 出队列操作
+     * @pram null
+     * */
+    _shiftAction(){
+        if(this.indexDB.actionQueue.length <= 0){
+            return false;
+        }
+        return this.indexDB.actionQueue.shift();
+    }
+
+    /**
+     * 获取队列长度
+     * @param null
+     * */
+    _getActionQueueLength(){
+        return this.indexDB.actionQueue.length;
+    }
+
+    /**
+     * 执行操作队列
+     * @param  null
+     * */
+    _implementAction(){
+        let len = this._getActionQueueLength();
+        if(len === 0 ){
+            return true;
+        }
+        for(let i = 0;i<len;i++){
+            let _action = this._shiftAction();
+
+            switch (_action.type){
+                case 'insert':
+                    console.log('=== action insert ===');
+                    this._insert(_action.tableName,_action.data);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /**
      * 获取indexDB的支持度
      * @param null
      * */
@@ -99,13 +151,33 @@ class indexDB {
      * 新版本打开database
      * @param {function} callback 回调函数
      * */
-    _openDatabase(callback) {
+    _openNewDatabase(callback) {
+        this._createDatabase(this._getValue('name'), (this._getValue('version')+1), (e,version) => {
+            this._setValue('version', version);
+            //存储成功当前版本
+            this._setLocalStroage();
+            typeof callback === 'function' ? callback(e) : '';
+        });
+    }
+
+    /**
+     * 新版本打开database
+     * @param {function} callback 回调函数
+     * */
+    _openNowDatabase(callback) {
         this._createDatabase(this._getValue('name'), this._getValue('version'), (e) => {
             //存储成功当前版本
             this._setLocalStroage();
-            this._setValue('version', (this._getValue('version') + 1));
             typeof callback === 'function' ? callback(e) : '';
         });
+    }
+
+    /**
+     * 关闭数据库
+     * @param null
+     * */
+    _closeDatabase(){
+        this._DB.close();
     }
 
     /**
@@ -118,7 +190,7 @@ class indexDB {
         let indexedDB = this._getIndexDB();
         // 创建 DB
         let req = indexedDB.open(name, version); //名字 版本号
-        console.log(version);
+        console.log('version == '+version);
 
         // 成功回调
         req.onsuccess = (e) => {
@@ -137,8 +209,12 @@ class indexDB {
             }
             //版本变化回调
             this._DB.onversionchange = (e) => {
+                if(e.newVersion === null){
+                    return;
+                }
                 this._DBOnversionchange(e);
             }
+            this._implementAction();
             console.log(3, 'indexDB onsuccess')
         }
         // 失败回调
@@ -149,7 +225,7 @@ class indexDB {
         // 版本改变时候的 回调
         req.onupgradeneeded = (e) => {
             console.log(1, 'indexDB.onupgradeneeded');
-            typeof  callback === 'function' ? callback(e) : '';
+            typeof  callback === 'function' ? callback(e,version) : '';
         }
     };
 
@@ -158,11 +234,9 @@ class indexDB {
      * @param e
      * */
     _DBOnversionchange(e) {
-        this._DB.close();
-        //删除引用
-        delete this._DB;
+        this._closeDatabase();
         this._setValue('indexDBActive', false);
-        console.log("A new version of this page is ready. Please reload!");
+        console.log("closed database");
     }
 
     /**
@@ -194,9 +268,14 @@ class indexDB {
                 _default = table[i].data;
             let store = this._creatrTablestore(e, _name, _keyPath, _autoIncrement);
             this._createTableIndex(store, table[i].index || []);
-            /*if (_default && _default.length > 0) {
-                this._insert(_name, _default);
-            }*/
+            if (_default && _default.length > 0) {
+                let _action = {
+                    type:'insert',
+                    tableName:_name,
+                    data:_default
+                };
+                this._pushAction(_action);
+            }
         }
     }
 
@@ -237,11 +316,6 @@ class indexDB {
      * @param {function} callback : 回调函数
      * */
     _createTransaction(tableName,Jurisdictionv){
-        if(!this._DB){
-            this._openDatabase((e)=>{
-                console.log('open database');
-            });
-        }
         let tx = this._DB.transaction(tableName,Jurisdictionv);
         return tx.objectStore(tableName);
     }
@@ -255,13 +329,12 @@ class indexDB {
         let Jurisdictionv = this._getValue('jurisdictionv').readwrite;
         let objectStore = this._createTransaction(tablename,Jurisdictionv);
 
-        // 所有的索引
-        let indexNames  = objectStore.indexNames;
-
         if(!data || data.length <= 0){
             console.log('insert data cannot undefined or length 0');
         }
         for(let i =0,len = data.length;i<len;i++){
+            // 所有的索引
+            this._checkIndex(objectStore.indexNames,data[i]);
             let req = objectStore.add(data[i]);
             req.oncomplete = (e)=>{
                 console.log('oncomplete');
@@ -271,6 +344,26 @@ class indexDB {
             }
             req.onsuccess = (e)=>{
                 console.log('onsuccess');
+            }
+        }
+    }
+
+    /**
+     * 校验索引是否附符合
+     * @param {array} indexs : 索引集合
+     * @param {object} data : 插入数据
+     * */
+    _checkIndex(indexs,data){
+        if(indexs.length <= 0 ){
+            return true;
+        }else{
+            for(let i=0,len=indexs.length;i<len;i++){
+                if(data[indexs[i]]){
+                    return true;
+                }else{
+                    console.warn('insert data no index');
+                    return false;
+                }
             }
         }
     }
