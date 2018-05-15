@@ -411,6 +411,6 @@ class indexDB {
      * @param {string} tableName : 删除的表名字
      * */
     _deleteTable (tableName){
-        
+
     }
 }
