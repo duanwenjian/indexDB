@@ -145,8 +145,6 @@ class indexDB {
      * */
     _getIndexDB() {
         let indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-        // ,IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction
-        // ,IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
         if (indexedDB) {
             this.indexDB.indexDBSupport = true;
         }
@@ -154,6 +152,13 @@ class indexDB {
             window.alert("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.")
         }
         return indexedDB;
+    }
+    /**
+     *  获取 游标
+     *  @param null
+     * */
+    _getIDBKeyRange(){
+        return window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
     }
 
     /**
@@ -249,7 +254,7 @@ class indexDB {
     }
 
     /**
-     * DB about
+     * DB about 被终止
      * @param e
      * */
     _DBOnabout(e) {
@@ -325,6 +330,7 @@ class indexDB {
      * @param {function} callback : 回调函数
      * */
     _createTransaction(tableName,Jurisdictionv){
+        // ,IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction
         let tx = this._DB.transaction(tableName,Jurisdictionv);
         return tx.objectStore(tableName);
     }
@@ -354,6 +360,9 @@ class indexDB {
             req.onsuccess = (e)=>{
                 console.log('onsuccess');
             }
+            reg.onabort = (e)=>{
+                console.log('onabort');
+            }
         }
     }
 
@@ -376,6 +385,9 @@ class indexDB {
             }
         }
     }
+    /**
+     *  查找条件解析
+     * */
 
     /**
      * 修改数据
@@ -398,11 +410,43 @@ class indexDB {
     }
 
     /**
+     * 查找条件解析
+     * @param {string} boundRangekey：查找条件
+     * */
+    _boundRange(boundRangekey){
+        let IDBKeyRange = this._getIDBKeyRange();
+        // boundRange 表示主键值从1到10(包含1和10)的集合。
+        // 如果第三个参数为true，则表示不包含最小键值1，如果第四参数为true，则表示不包含最大键值10，默认都为false
+        let boundRange = IDBKeyRange.bound(1, 10, false, false);
+
+        // onlyRange 表示由一个主键值的集合。only() 参数则为主键值，整数类型。
+        let onlyRange = IDBKeyRange.only(1);
+
+        // lowerRaneg 表示大于等于1的主键值的集合。
+        // 第二个参数可选，为true则表示不包含最小主键1，false则包含，默认为false
+        let lowerRange = IDBKeyRange.lowerBound(1, false);
+
+        // upperRange 表示小于等于10的主键值的集合。
+        // 第二个参数可选，为true则表示不包含最大主键10，false则包含，默认为false
+        let upperRange = IDBKeyRange.upperBound(10, false);
+    }
+
+    /**
      * 删除数据
      * @param {string} tableName ：需要删除的表格
      * @param {string} condition : 修改删除符合条件的数据
      * */
     _delete(tableName,condition){
+        let Jurisdictionv = this._getValue('jurisdictionv').readonly;
+        let objectStore = this._createTransaction(tableName,Jurisdictionv);
+        objectStore.openCursor(this._boundRange(condition)).onsuccess = (event)=> {
+            let cursor = event.target.result;
+            if (cursor) {
+                cursor.delete()
+            } else {
+            }
+        }
+
 
     }
 
