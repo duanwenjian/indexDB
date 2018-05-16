@@ -336,6 +336,37 @@ class indexDB {
     }
 
     /**
+     * 查找条件解析
+     * @param {string} boundRangekey：查找条件
+     * */
+    _boundRange(boundRangekey){
+        let IDBKeyRange = this._getIDBKeyRange();
+        // boundRange 表示主键值从1到10(包含1和10)的集合。
+        // 如果第三个参数为true，则表示不包含最小键值1，如果第四参数为true，则表示不包含最大键值10，默认都为false
+        let boundRange = IDBKeyRange.bound(1, 10, false, false);
+
+        // onlyRange 表示由一个主键值的集合。only() 参数则为主键值，整数类型。
+        let onlyRange = IDBKeyRange.only(1);
+
+        // lowerRaneg 表示大于等于1的主键值的集合。
+        // 第二个参数可选，为true则表示不包含最小主键1，false则包含，默认为false
+        let lowerRange = IDBKeyRange.lowerBound(1, false);
+
+        // upperRange 表示小于等于10的主键值的集合。
+        // 第二个参数可选，为true则表示不包含最大主键10，false则包含，默认为false
+        let upperRange = IDBKeyRange.upperBound(10, false);
+    }
+
+    /**
+     * 获取特定索引
+     * @param {object} Transaction:事务
+     * @param {string} index:指定缩影
+     * */
+    _getIndex(Transaction,index){
+        return Transaction.index(index);
+    }
+
+    /**
      * 插入数据
      * @param {string} tablename : 需要插入的表
      * @param {array} data : 数据
@@ -407,28 +438,6 @@ class indexDB {
      * */
     _select(tableName,condition){
 
-    }
-
-    /**
-     * 查找条件解析
-     * @param {string} boundRangekey：查找条件
-     * */
-    _boundRange(boundRangekey){
-        let IDBKeyRange = this._getIDBKeyRange();
-        // boundRange 表示主键值从1到10(包含1和10)的集合。
-        // 如果第三个参数为true，则表示不包含最小键值1，如果第四参数为true，则表示不包含最大键值10，默认都为false
-        let boundRange = IDBKeyRange.bound(1, 10, false, false);
-
-        // onlyRange 表示由一个主键值的集合。only() 参数则为主键值，整数类型。
-        let onlyRange = IDBKeyRange.only(1);
-
-        // lowerRaneg 表示大于等于1的主键值的集合。
-        // 第二个参数可选，为true则表示不包含最小主键1，false则包含，默认为false
-        let lowerRange = IDBKeyRange.lowerBound(1, false);
-
-        // upperRange 表示小于等于10的主键值的集合。
-        // 第二个参数可选，为true则表示不包含最大主键10，false则包含，默认为false
-        let upperRange = IDBKeyRange.upperBound(10, false);
     }
 
     /**
